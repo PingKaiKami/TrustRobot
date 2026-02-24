@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>信託服務介紹 | 智能助理</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #0084ff;
+            --bg-color: #f4f7f6;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            margin: 0; padding: 0;
+        }
+
+        /* --- 主網頁 Q&A 區塊 --- */
+        .main-container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 { text-align: center; color: var(--primary-color); margin-bottom: 30px; }
+
+        .qa-item {
+            border-bottom: 1px solid #eee;
+            padding: 5px 0;
+        }
+
+        .qa-question {
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between; /* 讓文字靠左，箭頭靠右 */
+            align-items: center;
+            color: var(--primary-color);
+            padding: 15px;
+            transition: background 0.3s;
+        }
+
+        .qa-question:hover { background-color: #fcfcfc; }
+
+        /* 箭頭樣式與旋轉動畫 */
+        .arrow {
+            font-size: 12px;
+            transition: transform 0.3s ease; /* 旋轉動畫 */
+            color: #999;
+        }
+
+        .qa-item.active .arrow {
+            transform: rotate(180deg); /* 點擊後旋轉180度 */
+            color: var(--accent-color);
+        }
+
+        .qa-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            color: #666;
+            padding: 0 15px;
+            line-height: 1.6;
+            background-color: #fafafa;
+        }
+
+        .qa-item.active .qa-answer {
+            max-height: 300px; /* 預期答案的最大高度 */
+            padding: 15px;
+        }
+
+        /* --- 右下角懸浮氣泡 --- */
+        #chat-trigger {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 999;
+        }
+
+        /* --- 聊天視窗本體 --- */
+        #chat-container {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none; /* 初始隱藏 */
+            flex-direction: column;
+            z-index: 1000;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .chat-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background-color: #fdfdfd;
+        }
+
+        .bubble {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 15px;
+            font-size: 14px;
+        }
+
+        .bot-bubble { background: #eee; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .user-bubble { background: var(--accent-color); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+
+        .chat-input-form {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .chat-input-form input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+        }
+
+        .chat-input-form button {
+            background: none; border: none; color: var(--accent-color);
+            font-weight: bold; cursor: pointer; margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 主頁面 Q&A -->
+    <div class="main-container">
+        <h1>🔍 信託功能常見問題</h1>
+        
+        <div class="qa-item">
+            <div class="qa-question" onclick="toggleQA(this)">
+                什麼是信託？ <span class="arrow">▼</span>
+            </div>
+            <div class="qa-answer">
+                信託是一種法律關係，委託人將財產權移轉或處分給受託人（通常是銀行），讓受託人依據信託合約的目的，為了受益人的利益管理或處分這筆財產。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="qa-question" onclick="toggleQA(this)">
+                我需要很多錢才能辦信託嗎？ <span class="arrow">▼</span>
+            </div>
+            <div class="qa-answer">
+                不一定。現在許多銀行推出了「微型信託」或「標準化信託」，門檻已經大幅降低，重點在於透過信託來達成特定的人生保障目標。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="qa-question" onclick="toggleQA(this)">
+                信託財產會被追債嗎？ <span class="arrow">▼</span>
+            </div>
+            <div class="qa-answer">
+                信託財產具有「獨立性」。原則上，委託人的債權人不得對信託財產強制執行，但如果是為了規避債務而惡意設立的信託則不在此限。
+            </div>
+        </div>
+    </div>
+
+    <!-- 懸浮氣泡 -->
+    <div id="chat-trigger" onclick="openChat()">💬</div>
+
+    <!-- 彈出式 Chatbot -->
+    <div id="chat-container">
+        <div class="chat-header">
+            <span>信託智能助手</span>
+            <button onclick="closeChat()" style="background:none; border:none; color:white; cursor:pointer; font-size:20px;">×</button>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="bubble bot-bubble">您好！有什麼我可以幫您的嗎？</div>
+            
+            {% if received_text %}
+                <div class="bubble user-bubble">{{ received_text }}</div>
+                <div class="bubble bot-bubble">收到訊息了！關於「{{ received_text }}」，我們會請專員回覆。</div>
+            {% endif %}
+        </div>
+
+        <form class="chat-input-form" id="chatForm">
+            <input type="text" id="userInput" placeholder="請輸入訊息..." required>
+            <button type="submit">發送</button>
+        </form>
+    </div>
+
+    <script>
+        // 1. Q&A 展開/收合（含箭頭旋轉）
+        function toggleQA(element) {
+            const item = element.parentElement;
+            // 關閉其他已打開的（可選，若想一次只開一個就加上這幾行）
+            // document.querySelectorAll('.qa-item').forEach(i => {
+            //     if(i !== item) i.classList.remove('active');
+            // });
+
+            item.classList.toggle('active');
+        }
+
+        // 2. 打開聊天室
+        function openChat() {
+            document.getElementById('chat-container').style.display = 'flex';
+            document.getElementById('chat-trigger').style.display = 'none';
+            scrollChatToBottom();
+        }
+
+        // 3. 關閉聊天室
+        function closeChat() {
+            document.getElementById('chat-container').style.display = 'none';
+            document.getElementById('chat-trigger').style.display = 'flex';
+        }
+
+        // 4. 滾動到底部
+        function scrollChatToBottom() {
+            const msgs = document.getElementById('chatMessages');
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        // 5. 確保 Flask 送出後自動打開
+        const chatForm = document.getElementById('chatForm');
+        const userInput = document.getElementById('userInput');
+        const chatMessages = document.getElementById('chatMessages');
+
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // *** 重要：阻止表單預設的「重整頁面」動作 ***
+
+            const message = userInput.value;
+            if (!message) return;
+
+            // 1. 立即在畫面上顯示使用者的氣泡
+            appendMessage('user-bubble', message);
+            userInput.value = ''; // 清空輸入欄
+
+            // 2. 使用 fetch 發送非同步請求到後端
+            fetch('/get_response', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_string: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 3. 收到後端回傳的 JSON 後，顯示機器人的氣泡
+                appendMessage('bot-bubble', data.reply);
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        // 封裝一個增加氣泡的函式
+        function appendMessage(className, text) {
+            const div = document.createElement('div');
+            div.className = `bubble ${className}`;
+            div.innerText = text;
+            chatMessages.appendChild(div);
+            
+            // 捲動到底部
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    </script>
+
+</body>
+</html>
