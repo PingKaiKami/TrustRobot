@@ -3,94 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>信託服務介紹 | 智能助理</title>
+    <title>信託服務平台</title>
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --accent-color: #0084ff;
-            --bg-color: #f4f7f6;
+            --primary-color: #0084ff;
+            --text-dark: #2c3e50;
+            --bg-light: #f4f7f6;
+            --border-color: #eee;
         }
 
         body {
             font-family: "Microsoft JhengHei", sans-serif;
-            background-color: var(--bg-color);
-            margin: 0; padding: 0;
+            background-color: var(--bg-light);
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
         }
 
-        /* --- 主網頁 Q&A 區塊 --- */
-        .main-container {
+        /* 主卡片容器 */
+        .main-card {
+            width: 100%;
             max-width: 800px;
-            margin: 50px auto;
             background: white;
-            padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden; /* 確保圓角 */
+            margin-top: 50px;
         }
 
-        h1 { text-align: center; color: var(--primary-color); margin-bottom: 30px; }
-
-        .qa-item {
-            border-bottom: 1px solid #eee;
-            padding: 5px 0;
+        /* 頁籤導覽列 */
+        .tab-nav {
+            display: flex;
+            background: #fff;
+            border-bottom: 2px solid var(--border-color);
         }
 
-        .qa-question {
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: none;
+            font-size: 16px;
             font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between; /* 讓文字靠左，箭頭靠右 */
-            align-items: center;
-            color: var(--primary-color);
-            padding: 15px;
-            transition: background 0.3s;
-        }
-
-        .qa-question:hover { background-color: #fcfcfc; }
-
-        /* 箭頭樣式與旋轉動畫 */
-        .arrow {
-            font-size: 12px;
-            transition: transform 0.3s ease; /* 旋轉動畫 */
-            color: #999;
-        }
-
-        .qa-item.active .arrow {
-            transform: rotate(180deg); /* 點擊後旋轉180度 */
-            color: var(--accent-color);
-        }
-
-        .qa-answer {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease, padding 0.3s ease;
             color: #666;
-            padding: 0 15px;
-            line-height: 1.6;
-            background-color: #fafafa;
-        }
-
-        .qa-item.active .qa-answer {
-            max-height: 300px; /* 預期答案的最大高度 */
-            padding: 15px;
-        }
-
-        /* --- 右下角懸浮氣泡 --- */
-        #chat-trigger {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background-color: var(--accent-color);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 30px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            z-index: 999;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px; /* 覆蓋底線 */
+        }
+
+        .tab-btn:hover {
+            color: var(--primary-color);
+            background-color: #f9f9f9;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        /* 內容區塊 */
+        .tab-content {
+            padding: 30px;
+            display: none; /* 預設全部隱藏 */
+        }
+
+        .tab-content.active {
+            display: block; /* 只顯示 active 的內容 */
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--text-dark);
+            margin-top: 0;
+        }
+
+        /* 文章列表的樣式 */
+        .menu-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .article-link {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .article-link:hover {
+            border-color: #0084ff;
+            box-shadow: 0 4px 12px rgba(0,132,255,0.1);
+            transform: translateY(-2px);
+            color: #0084ff;
+        }
+
+        /* 返回按鈕樣式 */
+        .back-btn {
+            background: #f0f0f0;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .back-btn:hover {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        /* 原有的 Q&A 樣式 */
+        .qa-item { border-bottom: 1px solid #eee; padding: 5px 0; }
+        .qa-question {
+            font-weight: bold; cursor: pointer; display: flex;
+            justify-content: space-between; align-items: center;
+            color: var(--text-dark); padding: 15px;
+        }
+        .arrow { font-size: 12px; transition: transform 0.3s; color: #999; }
+        .qa-item.active .arrow { transform: rotate(180deg); color: var(--primary-color); }
+        .qa-answer {
+            max-height: 0; overflow: hidden; transition: all 0.3s;
+            color: #666; padding: 0 15px; line-height: 1.6; background-color: #fafafa;
+        }
+        .qa-item.active .qa-answer { max-height: 200px; padding: 15px; }
+
+        /* --- Chatbot 樣式 (保持不變) --- */
+        #chat-trigger {
+            position: fixed; bottom: 30px; right: 30px;
+            width: 60px; height: 60px; background-color: var(--primary-color);
+            border-radius: 50%; display: flex; justify-content: center;
+            align-items: center; color: white; font-size: 30px;
+            cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
         /* --- 聊天視窗本體 --- */
@@ -161,39 +215,51 @@
 </head>
 <body>
 
-    <!-- 主頁面 Q&A -->
-    <div class="main-container">
-        <h1>🔍 信託功能常見問題</h1>
-        
-        <div class="qa-item">
-            <div class="qa-question" onclick="toggleQA(this)">
-                什麼是信託？ <span class="arrow">▼</span>
+    <div class="main-card">
+        <!-- 分類導覽列 -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab(event, 'tab-qa')">信託QA</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-article')">信託文章</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-price')">信託報價</button>
+        </nav>
+
+        <!-- 內容 1: 信託QA -->
+        <div id="tab-qa" class="tab-content active">
+            <h2>🔍 信託功能常見問題</h2>
+            <div class="qa-item">
+                <div class="qa-question" onclick="toggleQA(this)">什麼是信託？ <span class="arrow">▼</span></div>
+                <div class="qa-answer">這是信託QA的內容...</div>
             </div>
-            <div class="qa-answer">
-                信託是一種法律關係，委託人將財產權移轉或處分給受託人（通常是銀行），讓受託人依據信託合約的目的，為了受益人的利益管理或處分這筆財產。
+            <!-- 可以放更多 QA -->
+        </div>
+
+        <!-- 內容 2: 信託文章 -->
+        <div id="tab-article" class="tab-content">
+            <!-- 狀態一：文章列表 -->
+            <div id="article-menu">
+                <h2>📜 精選文章列表</h2>
+                <div id="menu-list" class="menu-container">
+                    <!-- 這裡會由 JS 自動產生文章標題列表 -->
+                </div>
+            </div>
+
+            <!-- 狀態二：文章閱讀器 (預設隱藏) -->
+            <div id="article-viewer" style="display: none;">
+                <button onclick="backToMenu()" class="back-btn">← 返回文章列表</button>
+                <div id="full-article-content">
+                    <!-- 這裡會放入 fetch 過來的 HTML 內容 -->
+                </div>
             </div>
         </div>
 
-        <div class="qa-item">
-            <div class="qa-question" onclick="toggleQA(this)">
-                我需要很多錢才能辦信託嗎？ <span class="arrow">▼</span>
-            </div>
-            <div class="qa-answer">
-                不一定。現在許多銀行推出了「微型信託」或「標準化信託」，門檻已經大幅降低，重點在於透過信託來達成特定的人生保障目標。
-            </div>
-        </div>
-
-        <div class="qa-item">
-            <div class="qa-question" onclick="toggleQA(this)">
-                信託財產會被追債嗎？ <span class="arrow">▼</span>
-            </div>
-            <div class="qa-answer">
-                信託財產具有「獨立性」。原則上，委託人的債權人不得對信託財產強制執行，但如果是為了規避債務而惡意設立的信託則不在此限。
-            </div>
+        <!-- 內容 3: 信託報價 -->
+        <div id="tab-price" class="tab-content">
+            <h2>報價資訊</h2>
+            <p style="text-align: center; color: #999;">目前尚無報價資訊。</p>
         </div>
     </div>
 
-    <!-- 懸浮氣泡 -->
+    <!-- Chatbot 氣泡與視窗 (這裡保留你原本的程式碼) -->
     <div id="chat-trigger" onclick="openChat()">💬</div>
 
     <!-- 彈出式 Chatbot -->
@@ -219,15 +285,105 @@
     </div>
 
     <script>
-        // 1. Q&A 展開/收合（含箭頭旋轉）
-        function toggleQA(element) {
-            const item = element.parentElement;
-            // 關閉其他已打開的（可選，若想一次只開一個就加上這幾行）
-            // document.querySelectorAll('.qa-item').forEach(i => {
-            //     if(i !== item) i.classList.remove('active');
-            // });
+        // 定義你想要載入的 HTML 檔案路徑
+        // 1. 定義文章資料 (標題與檔案路徑)
+        const articles = [
+            { title: "什麼是保險金信託：守護家人的最後一道防線", url: "/static/articles/article1.html" },
+            { title: "什麼是安養信託：守護晚年尊嚴，專款專用", url: "/static/articles/article2.html" },
+            { title: "什麼是遺囑信託：延續意志，讓愛在規則中傳承", url: "/static/articles/article3.html" }
+        ];
 
-            item.classList.toggle('active');
+        let currentChatMode = "articles";
+
+        function switchTab(event, tabId) {
+            // 1. 原有的切換頁籤邏輯...
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+
+            // 2. 新增：根據 tabId 更新 Chatbot 的 Mode
+            if (tabId === 'tab-qa' || tabId === 'tab-article') {
+                currentChatMode = "articles"; // QA 和 文章都歸類為 articles
+            } else if (tabId === 'tab-price') {
+                currentChatMode = "products"; // 報價歸類為 products
+            }
+            
+            console.log("目前的聊天模式已切換為:", currentChatMode);
+        }
+
+        // 2. 初始化列表
+        function initArticleMenu() {
+            const menuList = document.getElementById('menu-list');
+            menuList.innerHTML = '';
+
+            articles.forEach((article, index) => {
+                const item = document.createElement('div');
+                item.className = 'article-link';
+                item.innerHTML = `
+                    <span>${article.title}</span>
+                    <span style="font-size: 20px;">→</span>
+                `;
+                item.onclick = () => loadFullArticle(article.url);
+                menuList.appendChild(item);
+            });
+        }
+
+        // 3. 讀取並顯示文章內文
+        async function loadFullArticle(url) {
+            const menu = document.getElementById('article-menu');
+            const viewer = document.getElementById('article-viewer');
+            const contentArea = document.getElementById('full-article-content');
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('讀取失敗');
+                const html = await response.text();
+
+                // 填入內容並切換顯示狀態
+                contentArea.innerHTML = html;
+                menu.style.display = 'none';
+                viewer.style.display = 'block';
+
+                // 捲動到頂部
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            } catch (error) {
+                alert('無法載入文章，請稍後再試。');
+            }
+        }
+
+        // 4. 返回列表
+        function backToMenu() {
+            document.getElementById('article-menu').style.display = 'block';
+            document.getElementById('article-viewer').style.display = 'none';
+        }
+
+        // 頁面載入時執行初始化
+        window.addEventListener('load', initArticleMenu);
+
+        // 切換頁籤功能
+        function switchTab(event, tabId) {
+            // 1. 隱藏所有內容
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            // 2. 移除所有按鈕的 active 樣式
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // 3. 顯示點擊的內容
+            document.getElementById(tabId).classList.add('active');
+
+            // 4. 設定當前按鈕為 active
+            event.currentTarget.classList.add('active');
+        }
+
+        // 原有的 QA 展開功能
+        function toggleQA(element) {
+            element.parentElement.classList.toggle('active');
         }
 
         // 2. 打開聊天室
@@ -268,7 +424,10 @@
             fetch('/get_response', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_string: message })
+                body: JSON.stringify({ 
+                    mode: currentChatMode,
+                    question: message
+                })
             })
             .then(response => response.json())
             .then(data => {

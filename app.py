@@ -2,7 +2,7 @@ import os
 import time
 import json
 from dotenv import load_dotenv
-from flask import Flask, request, Response
+from flask import Flask, render_template, request, Response, jsonify
 
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
@@ -10,6 +10,10 @@ from langchain_community.vectorstores import Chroma
 load_dotenv()
 
 app = Flask(__name__)
+
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    return render_template('index.html')
 
 PERSIST_DIR = "db"
 
@@ -141,6 +145,45 @@ def build_prompt(
 【回答】
 """
 
+
+@app.route('/get_response', methods=['POST'])
+def get_response():
+    data = request.json
+    mode = (data.get("mode") or "articles").strip().lower()
+    if mode not in ("articles", "products"):
+        return json_response(
+            {"error": {"code": "INVALID_MODE", "message": "mode must be 'articles' or 'products'"}},
+            status=400,
+        )
+
+    question = (data.get("question") or "").strip()
+    if not question:
+        return json_response(
+            {"error": {"code": "EMPTY_QUESTION", "message": "question is required"}},
+            status=400,
+        )
+    
+    print(f"收到使用者訊息: {question}")
+    # top_k（可選）
+    main_k = int(data.get("main_top_k") or data.get("top_k") or 3)
+    laws_k = int(data.get("laws_top_k") or 2)
+
+    # 1) 主庫檢索（articles 或 products）
+    main_collection = COLLECTIONS[mode]
+    main_contexts, main_sources = retrieve(main_collection, question, main_k)
+
+    # 2) 法規必查
+    law_collection = COLLECTIONS["laws"]
+    law_contexts, law_sources = retrieve(law_collection, question, laws_k)
+
+    prompt = build_prompt(mode, "", question, main_contexts, law_contexts)
+    answer = LLM.invoke(prompt).content
+
+    # sources = main_sources + law_sources
+    
+    return jsonify({
+        "reply": f"{answer}"
+    })
 
 @app.post("/ask")
 def ask():
