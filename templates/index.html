@@ -147,70 +147,123 @@
             cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
-        /* --- 聊天視窗本體 --- */
-        #chat-container {
-            position: fixed;
-            bottom: 100px;
-            right: 30px;
-            width: 350px;
-            height: 500px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            display: none; /* 初始隱藏 */
-            flex-direction: column;
-            z-index: 1000;
-            overflow: hidden;
-            border: 1px solid #ddd;
-        }
-
-        .chat-header {
-            background: var(--primary-color);
-            color: white;
-            padding: 15px;
+        /* 嵌入式聊天室容器 */
+        .embedded-chat-container {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            height: 550px; /* 設定一個固定高度 */
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            overflow: hidden;
         }
 
+        /* 聊天訊息區 (修改原本的樣式，拿掉 fixed 相關屬性) */
         .chat-messages {
             flex: 1;
-            padding: 15px;
+            padding: 20px;
             overflow-y: auto;
+            background-color: #fdfdfd;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            color: #333333;
-            background-color: #fdfdfd;
+            gap: 15px;
+        }
+        /* 訊息包裝容器 */
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+            width: 100%;
         }
 
+        /* 名字樣式 */
+        .sender-name {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+
+        /* 讓機器人的包裝容器靠左 */
+        .bot-wrapper {
+            align-items: flex-start;
+        }
+
+        /* 讓使用者的包裝容器靠右 */
+        .user-wrapper {
+            align-items: flex-end;
+        }
+
+        /* 氣泡樣式微調 (拿掉原本的 align-self，改由 wrapper 控制) */
         .bubble {
-            max-width: 80%;
-            padding: 10px 14px;
+            max-width: 85%;
+            padding: 10px 15px;
             border-radius: 15px;
-            font-size: 14px;
+            position: relative;
         }
 
-        .bot-bubble { background: #eee; align-self: flex-start; border-bottom-left-radius: 2px; }
-        .user-bubble { background: #eee; color: #333333; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .bot-bubble {
+            background-color: #f0f0f0;
+            color: #333;
+            border-top-left-radius: 2px;
+        }
 
+        .user-bubble {
+            background-color: #0084ff;
+            color: white;
+            border-top-right-radius: 2px;
+        }
+        /* 思考中氣泡的特殊樣式 */
+        .thinking-bubble {
+            font-style: italic;
+            color: #666;
+            min-width: 60px;
+        }
+
+        /* 點點動畫 */
+        .dots::after {
+            content: '';
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+            100% { content: ''; }
+        }
+
+        /* 聊天輸入區 */
         .chat-input-form {
             display: flex;
-            padding: 10px;
+            padding: 15px;
+            background: #fff;
             border-top: 1px solid #eee;
+        }
+
+        .chat-input-form button {
+            background: #0084ff;
+            color: white;
+            border: none;
+            padding: 0 20px;
+            margin-left: 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .chat-input-form button:hover {
+            background-color: #0066cc; /* 滑鼠移上去變深藍 */
         }
 
         .chat-input-form input {
             flex: 1;
-            padding: 10px;
+            padding: 12px 18px;
             border: 1px solid #ddd;
-            border-radius: 20px;
+            border-radius: 25px;
             outline: none;
-        }
-
-        .chat-input-form button {
-            background: none; border: none; color: var(--accent-color);
-            font-weight: bold; cursor: pointer; margin-left: 8px;
+            color: black; /* 確保輸入文字是黑色 */
         }
     </style>
 </head>
@@ -221,7 +274,7 @@
         <nav class="tab-nav">
             <button class="tab-btn active" onclick="switchTab(event, 'tab-qa')">信託QA</button>
             <button class="tab-btn" onclick="switchTab(event, 'tab-article')">信託文章</button>
-            <button class="tab-btn" onclick="switchTab(event, 'tab-price')">信託報價</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-assistant')">智能助理</button>
         </nav>
 
         <!-- 內容 1: 信託QA -->
@@ -229,9 +282,32 @@
             <h2>🔍 信託功能常見問題</h2>
             <div class="qa-item">
                 <div class="qa-question" onclick="toggleQA(this)">什麼是信託？ <span class="arrow">▼</span></div>
-                <div class="qa-answer">這是信託QA的內容...</div>
+                <div class="qa-answer">信託是一種法律關係：委託人將財產權移轉給受託人，由其依合約目的（如養老、傳承），為受益人管理並處分財產。</div>
             </div>
-            <!-- 可以放更多 QA -->
+            <div class="qa-item">
+                <div class="qa-question" onclick="toggleQA(this)">保險金信託一定要改受益人嗎？ <span class="arrow">▼</span></div>
+                <div class="qa-answer">主要是需申請「保單批註」，約定給付撥入專戶。具體作業視各保險公司而定。</div>
+            </div>
+            <div class="qa-item">
+                <div class="qa-question" onclick="toggleQA(this)">同一張保單有多個受益人怎麼辦？ <span class="arrow">▼</span></div>
+                <div class="qa-answer">須由各受益人分別簽定信託契約。若有部分受益人不配合，建議轉人工顧問諮詢處理。</div>
+            </div>
+            <div class="qa-item">
+                <div class="qa-question" onclick="toggleQA(this)">這能省遺產稅嗎？ <span class="arrow">▼</span></div>
+                <div class="qa-answer">指定受益人的人壽保險金原則上不計入遺產總額，但仍可能涉及最低稅負制或「實質課稅原則」。此屬稅務專業判斷。</div>
+            </div>
+            <div class="qa-item">
+                <div class="qa-question" onclick="toggleQA(this)">安養信託跟把錢交給家人有什麼不同？ <span class="arrow">▼</span></div>
+                <div class="qa-answer">信託有明確的「法律規則」。由受託人依約執行，降低主觀爭議與挪用風險。</div>
+            </div>
+            <div class="qa-item">
+                <div class="qa-question" onclick="toggleQA(this)">可以設計成直接付給看護或機構嗎？ <span class="arrow">▼</span></div>
+                <div class="qa-answer">可以。這也是最推薦的做法，讓資金流向更清楚，減少家人代墊的麻煩。</div>
+            </div>
+            <div class="qa-item">
+                <div class="qa-question" onclick="toggleQA(this)">如果未來需求變多，費用不夠怎麼辦？ <span class="arrow">▼</span></div>
+                <div class="qa-answer">可預先設計「彈性調整條款」，例如達到特定照護等級就提高月付額，或設置緊急預備金機制。</div>
+            </div>
         </div>
 
         <!-- 內容 2: 信託文章 -->
@@ -253,36 +329,24 @@
             </div>
         </div>
 
-        <!-- 內容 3: 信託報價 -->
-        <div id="tab-price" class="tab-content">
-            <h2>報價資訊</h2>
-            <p style="text-align: center; color: #999;">目前尚無報價資訊。</p>
-        </div>
-    </div>
+        <div id="tab-assistant" class="tab-content">
+            <div class="embedded-chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <!-- 初始歡迎訊息 -->
+                    <div class="message-wrapper bot-wrapper">
+                        <div class="sender-name">智慧大豐</div>
+                        <div class="bubble bot-bubble">
+                            您好！我是您的信託智能助理「智慧大豐」。您可以針對剛才閱讀的 QA 或文章內容向我提問。
+                        </div>
+                    </div>
+                </div>
 
-    <!-- Chatbot 氣泡與視窗 (這裡保留你原本的程式碼) -->
-    <div id="chat-trigger" onclick="openChat()">💬</div>
-
-    <!-- 彈出式 Chatbot -->
-    <div id="chat-container">
-        <div class="chat-header">
-            <span>信託智能助手</span>
-            <button onclick="closeChat()" style="background:none; border:none; color:white; cursor:pointer; font-size:20px;">×</button>
+                <form class="chat-input-form" id="chatForm">
+                    <input type="text" id="userInput" placeholder="請輸入問題..." required>
+                    <button type="submit">發送</button>
+                </form>
+            </div>
         </div>
-        
-        <div class="chat-messages" id="chatMessages">
-            <div class="bubble bot-bubble">您好！有什麼我可以幫您的嗎？</div>
-            
-            {% if received_text %}
-                <div class="bubble user-bubble">{{ received_text }}</div>
-                <div class="bubble bot-bubble">收到訊息了！關於「{{ received_text }}」，我們會請專員回覆。</div>
-            {% endif %}
-        </div>
-
-        <form class="chat-input-form" id="chatForm">
-            <input type="text" id="userInput" placeholder="請輸入訊息..." required>
-            <button type="submit">發送</button>
-        </form>
     </div>
 
     <script>
@@ -293,27 +357,6 @@
             { title: "什麼是安養信託：守護晚年尊嚴，專款專用", url: "/static/articles/article2.html" },
             { title: "什麼是遺囑信託：延續意志，讓愛在規則中傳承", url: "/static/articles/article3.html" }
         ];
-
-        let currentChatMode = "articles";
-
-        function switchTab(event, tabId) {
-            // 1. 原有的切換頁籤邏輯...
-            const contents = document.querySelectorAll('.tab-content');
-            contents.forEach(content => content.classList.remove('active'));
-            const buttons = document.querySelectorAll('.tab-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
-
-            // 2. 新增：根據 tabId 更新 Chatbot 的 Mode
-            if (tabId === 'tab-qa' || tabId === 'tab-article') {
-                currentChatMode = "articles"; // QA 和 文章都歸類為 articles
-            } else if (tabId === 'tab-price') {
-                currentChatMode = "products"; // 報價歸類為 products
-            }
-            
-            console.log("目前的聊天模式已切換為:", currentChatMode);
-        }
 
         // 2. 初始化列表
         function initArticleMenu() {
@@ -367,37 +410,30 @@
 
         // 切換頁籤功能
         function switchTab(event, tabId) {
-            // 1. 隱藏所有內容
+            // 1. 切換分頁顯示
             const contents = document.querySelectorAll('.tab-content');
             contents.forEach(content => content.classList.remove('active'));
-
-            // 2. 移除所有按鈕的 active 樣式
             const buttons = document.querySelectorAll('.tab-btn');
             buttons.forEach(btn => btn.classList.remove('active'));
-
-            // 3. 顯示點擊的內容
+            
             document.getElementById(tabId).classList.add('active');
-
-            // 4. 設定當前按鈕為 active
             event.currentTarget.classList.add('active');
+
+            // 2. 更新 Mode 並處理助理分頁邏輯
+            if (tabId === 'tab-assistant') {
+                
+                // 切換過去時，自動捲動到底部並聚焦輸入框
+                setTimeout(() => {
+                    const msgs = document.getElementById('chatMessages');
+                    msgs.scrollTop = msgs.scrollHeight;
+                    document.getElementById('userInput').focus();
+                }, 100);
+            }
         }
 
         // 原有的 QA 展開功能
         function toggleQA(element) {
             element.parentElement.classList.toggle('active');
-        }
-
-        // 2. 打開聊天室
-        function openChat() {
-            document.getElementById('chat-container').style.display = 'flex';
-            document.getElementById('chat-trigger').style.display = 'none';
-            scrollChatToBottom();
-        }
-
-        // 3. 關閉聊天室
-        function closeChat() {
-            document.getElementById('chat-container').style.display = 'none';
-            document.getElementById('chat-trigger').style.display = 'flex';
         }
 
         // 4. 滾動到底部
@@ -412,40 +448,96 @@
         const chatMessages = document.getElementById('chatMessages');
 
         chatForm.addEventListener('submit', function(e) {
-            e.preventDefault(); // *** 重要：阻止表單預設的「重整頁面」動作 ***
+            e.preventDefault();
 
-            const message = userInput.value;
+            const message = userInput.value.trim();
             if (!message) return;
 
-            // 1. 立即在畫面上顯示使用者的氣泡
+            // 1. 顯示使用者訊息
             appendMessage('user-bubble', message);
-            userInput.value = ''; // 清空輸入欄
+            userInput.value = '';
 
-            // 2. 使用 fetch 發送非同步請求到後端
+            // 2. 顯示「思考中...」氣泡並取得該元素參考
+            const thinkingBubble = showThinkingBubble();
+
+            // 3. 發送請求
             fetch('/get_response', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    mode: currentChatMode,
+                    mode: "products", // need fix
                     question: message
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
             .then(data => {
-                // 3. 收到後端回傳的 JSON 後，顯示機器人的氣泡
+                // 4. 移除思考中氣泡
+                thinkingBubble.remove();
+                
+                // 5. 顯示機器人真正的回覆
                 appendMessage('bot-bubble', data.reply);
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                thinkingBubble.remove();
+                appendMessage('bot-bubble', "抱歉，連線發生錯誤，請稍後再試。");
+            });
         });
+
+        // 新增：顯示思考中氣泡的函式
+        function showThinkingBubble() {
+            const chatMessages = document.getElementById('chatMessages');
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = 'message-wrapper bot-wrapper'; // 機器人靠左
+
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'sender-name';
+            nameDiv.innerText = '智慧大豐';
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'bubble bot-bubble thinking-bubble';
+            bubbleDiv.innerHTML = '思考中<span class="dots"></span>';
+
+            wrapper.appendChild(nameDiv);
+            wrapper.appendChild(bubbleDiv);
+            chatMessages.appendChild(wrapper);
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // 返回 wrapper，這樣刪除時才會連名字一起刪掉
+            return wrapper; 
+        }
 
         // 封裝一個增加氣泡的函式
         function appendMessage(className, text) {
-            const div = document.createElement('div');
-            div.className = `bubble ${className}`;
-            div.innerText = text;
-            chatMessages.appendChild(div);
+            const chatMessages = document.getElementById('chatMessages');
             
-            // 捲動到底部
+            // 1. 建立訊息包裝容器
+            const wrapper = document.createElement('div');
+            // 根據 className 判斷是使用者還是機器人，決定靠左或靠右
+            const isUser = className === 'user-bubble';
+            wrapper.className = isUser ? 'message-wrapper user-wrapper' : 'message-wrapper bot-wrapper';
+
+            // 2. 建立名字標籤
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'sender-name';
+            nameDiv.innerText = isUser ? '使用者' : '智慧大豐';
+
+            // 3. 建立氣泡
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = `bubble ${className}`;
+            bubbleDiv.innerText = text;
+
+            // 4. 組合並加入畫面
+            wrapper.appendChild(nameDiv);
+            wrapper.appendChild(bubbleDiv);
+            chatMessages.appendChild(wrapper);
+
+            // 5. 捲動到底部
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
     </script>

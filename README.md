@@ -1,29 +1,35 @@
 # TrustRobot
 
+## 0. 介紹
+
+本專案是為`2026永豐金控商業競賽`所建置的，目的是讓人們更加了解何謂信託
+
 ## 1. 建置專案
 ```
 git clone https://github.com/PingKaiKami/TrustRobot.git
 ```
 
-## 2. 測試
+## 2. 下載插件 (建議於虛擬環境下執行)
 ```
-python test.py
+pip install -r requirements.txt
 ```
 
-## 整合部分 `test.py` 中
-``` python
-@app.route('/get_response', methods=['POST'])
-def get_response():
-    data = request.json
-    user_input = data.get('user_string')
-    
-    print(f"收到使用者訊息: {user_input}")
-    
-    return jsonify({
-        "reply": f"收到您的訊息了！關於「{user_input}」，我們會請專員回覆。"
+## 3. 使用
+```
+python app.py
+```
+
+
+## 注意
+
+到時候將`mode`刪除時 這邊的`mode`請幫我一並刪除
+```
+fetch('/get_response', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+        mode: "products", // need fix
+        question: message
     })
+})
 ```
-
-`user_input`是指使用者傳過來的內容，請將這個跟 RAG 結合
-
-最後 RAG 回傳的結果請寫在???中 `return jsonify({"reply": f"???"})`
