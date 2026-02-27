@@ -20,7 +20,7 @@ PERSIST_DIR = "db"
 # 三個 collection 名稱（要跟 ingest_all.py 一致）
 COLLECTIONS = {
     "laws": "trust_laws",
-    "main": "trust_main",  # ✅ 新主庫
+    "main": "trust_main",
 }
 
 # ===== 全域單例（效能更好）=====
@@ -88,7 +88,6 @@ def dedup_results(results, need_k: int):
         contexts.append(content)
         sources.append(
             {
-                "mode": doc.metadata.get("mode", "unknown"),
                 "source": doc.metadata.get("source", "unknown"),
                 "score": float(score),
                 "excerpt": content[:220],
@@ -112,14 +111,11 @@ def retrieve(collection: str, query: str, top_k: int):
 
 
 def build_prompt(
-    mode: str,
     user_profile_summary: str,
     question: str,
     main_contexts: list[str],
     law_contexts: list[str],
 ) -> str:
-    main_title = "文章資料" if mode == "articles" else "產品資料"
-
     main_ctx = "\n\n---\n\n".join(main_contexts) if main_contexts else ""
     law_ctx = "\n\n---\n\n".join(law_contexts) if law_contexts else ""
 
@@ -148,12 +144,6 @@ def build_prompt(
 @app.route('/get_response', methods=['POST'])
 def get_response():
     data = request.json
-    mode = (data.get("mode") or "articles").strip().lower()
-    if mode not in ("articles", "products"):
-        return json_response(
-            {"error": {"code": "INVALID_MODE", "message": "mode must be 'articles' or 'products'"}},
-            status=400,
-        )
 
     question = (data.get("question") or "").strip()
     if not question:
@@ -175,7 +165,7 @@ def get_response():
     law_collection = COLLECTIONS["laws"]
     law_contexts, law_sources = retrieve(law_collection, question, laws_k)
 
-    prompt = build_prompt(mode, "", question, main_contexts, law_contexts)
+    prompt = build_prompt("", question, main_contexts, law_contexts)
     answer = LLM.invoke(prompt).content
 
     # sources = main_sources + law_sources
@@ -184,62 +174,5 @@ def get_response():
         "reply": f"{answer}"
     })
 
-@app.post("/ask")
-def ask():
-    t0 = time.time()
-    data = request.get_json(force=True) or {}
-
-    mode = (data.get("mode") or "articles").strip().lower()
-    if mode not in ("articles", "products"):
-        return json_response(
-            {"error": {"code": "INVALID_MODE", "message": "mode must be 'articles' or 'products'"}},
-            status=400,
-        )
-
-    question = (data.get("question") or "").strip()
-    if not question:
-        return json_response(
-            {"error": {"code": "EMPTY_QUESTION", "message": "question is required"}},
-            status=400,
-        )
-
-    # 使用者資訊（可選）
-    user_profile_summary = normalize_user_profile(data.get("user_profile"))
-
-    # top_k（可選）
-    main_k = int(data.get("main_top_k") or data.get("top_k") or 3)
-    laws_k = int(data.get("laws_top_k") or 2)
-
-    # 1) 主庫檢索（現在一律從main找）
-    main_collection = COLLECTIONS["main"]
-    main_contexts, main_sources = retrieve(main_collection, question, main_k)
-
-    # 2) 法規必查
-    law_collection = COLLECTIONS["laws"]
-    law_contexts, law_sources = retrieve(law_collection, question, laws_k)
-
-    # 3) 組 prompt → 生成回答
-    prompt = build_prompt(mode, user_profile_summary, question, main_contexts, law_contexts)
-    answer = LLM.invoke(prompt).content
-
-    latency_ms = int((time.time() - t0) * 1000)
-
-    # 4) sources 合併（先主庫後法規）
-    sources = main_sources + law_sources
-
-    payload = {
-        "answer": answer,
-        "sources": sources,
-        "meta": {
-            "latency_ms": latency_ms,
-            "mode": mode,
-            "main_top_k": main_k,
-            "laws_top_k": laws_k,
-        },
-    }
-    return json_response(payload, status=200)
-
-
 if __name__ == "__main__":
-    # debug=True 會啟動 reloader；改了檔案記得完整重啟一次（Ctrl+C 再跑）
     app.run(host="0.0.0.0", port=8000, debug=True)
