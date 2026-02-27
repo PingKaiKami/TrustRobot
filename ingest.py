@@ -11,23 +11,28 @@ load_dotenv()
 
 PERSIST_DIR = "db"
 
-# 三種資料來源 → 三個 collection
+# ✅ 主庫合併 collection（articles + products 共用）
+MAIN_COLLECTION = "trust_main"
+
+# ✅ laws 仍然獨立 collection
+LAWS_COLLECTION = "trust_laws"
+
 SOURCES = {
     "laws": {
         "pattern": "data/laws/*.txt",
-        "collection": "trust_laws",
+        "collection": LAWS_COLLECTION,
         "chunk_size": 550,
         "chunk_overlap": 120,
     },
     "articles": {
         "pattern": "data/articles/*.txt",
-        "collection": "trust_articles",
+        "collection": MAIN_COLLECTION,  # ✅ 改成主庫
         "chunk_size": 300,
         "chunk_overlap": 80,
     },
     "products": {
         "pattern": "data/products/*.txt",
-        "collection": "trust_products",
+        "collection": MAIN_COLLECTION,  # ✅ 改成主庫
         "chunk_size": 300,
         "chunk_overlap": 60,
     },
@@ -44,7 +49,6 @@ def load_documents(mode: str, pattern: str):
         loader = TextLoader(path, encoding="utf-8")
         loaded = loader.load()
 
-        # 防呆：空檔案
         if not loaded or not loaded[0].page_content.strip():
             print(f"[WARN] 檔案內容為空，略過：{path}")
             continue
@@ -72,20 +76,19 @@ def ingest_mode(mode: str, cfg: dict, embeddings: OpenAIEmbeddings):
         print(f"[SKIP] mode={mode} 切段後 chunks=0（請檢查文本格式）")
         return len(docs), 0
 
-    # 寫入 Chroma collection（自動持久化，不需要 persist()）
-    Chroma.from_documents(
-        documents=chunks,
-        embedding=embeddings,
-        collection_name=cfg["collection"],
+    # ✅ 先打開指定 collection，再 add（articles/products 會一起進主庫）
+    vectordb = Chroma(
         persist_directory=PERSIST_DIR,
+        collection_name=cfg["collection"],
+        embedding_function=embeddings,
     )
+    vectordb.add_documents(chunks)
 
     print(f"[OK] mode={mode} docs={len(docs)} chunks={len(chunks)} -> collection={cfg['collection']}")
     return len(docs), len(chunks)
 
 def main():
     os.makedirs(PERSIST_DIR, exist_ok=True)
-
     embeddings = OpenAIEmbeddings()
 
     total_docs, total_chunks = 0, 0

@@ -20,8 +20,7 @@ PERSIST_DIR = "db"
 # 三個 collection 名稱（要跟 ingest_all.py 一致）
 COLLECTIONS = {
     "laws": "trust_laws",
-    "articles": "trust_articles",
-    "products": "trust_products",
+    "main": "trust_main",  # ✅ 新主庫
 }
 
 # ===== 全域單例（效能更好）=====
@@ -169,7 +168,7 @@ def get_response():
     laws_k = int(data.get("laws_top_k") or 2)
 
     # 1) 主庫檢索（articles 或 products）
-    main_collection = COLLECTIONS[mode]
+    main_collection = COLLECTIONS["main"]
     main_contexts, main_sources = retrieve(main_collection, question, main_k)
 
     # 2) 法規必查
@@ -211,8 +210,8 @@ def ask():
     main_k = int(data.get("main_top_k") or data.get("top_k") or 3)
     laws_k = int(data.get("laws_top_k") or 2)
 
-    # 1) 主庫檢索（articles 或 products）
-    main_collection = COLLECTIONS[mode]
+    # 1) 主庫檢索（現在一律從main找）
+    main_collection = COLLECTIONS["main"]
     main_contexts, main_sources = retrieve(main_collection, question, main_k)
 
     # 2) 法規必查
