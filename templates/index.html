@@ -19,6 +19,28 @@
             display: flex; flex-direction: column; align-items: center;
         }
 
+        /* 頁面頂部標題樣式 */
+        .page-header {
+            text-align: center;
+            margin-top: 40px;   /* 與頁面頂部的間距 */
+            margin-bottom: 30px; /* 與下方卡片的間距 */
+        }
+
+        .logo-text {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1a4a7a;    /* 永豐品牌藍色 */
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05); /* 輕微陰影增加質感 */
+        }
+
+        .sub-text {
+            font-size: 16px;
+            color: #666;       /* 灰色的副標題 */
+            letter-spacing: 1px;
+        }
+
         /* 主卡片容器 */
         .main-card {
             width: 100%;
@@ -268,6 +290,11 @@
     </style>
 </head>
 <body>
+
+    <header class="page-header">
+        <div class="logo-text">永豐信託小學堂</div>
+        <div class="sub-text">專業、守護、傳承 — 您的信託規劃助手</div>
+    </header>
 
     <div class="main-card">
         <!-- 分類導覽列 -->
